@@ -1,19 +1,25 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import AnalyticsPage from "@/pages/Analytics";
+import AuthPage from "@/pages/Auth";
+import DashboardPage from "@/pages/Dashboard";
+import HomePage from "@/pages/Home";
 import NotFound from "@/pages/NotFound";
-import PublicRoute from "./PublicRoute";
+
 import ProtectedRoute from "./ProtectedRoute";
+import PublicRoute from "./PublicRoute";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<div>Home</div>} />
+        <Route path="/" element={<HomePage />} />
+
         <Route
           path="/auth"
           element={
             <PublicRoute>
-              <div>Auth</div>
+              <AuthPage />
             </PublicRoute>
           }
         />
@@ -22,7 +28,7 @@ export default function AppRouter() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <div>Dashboard</div>
+              <DashboardPage />
             </ProtectedRoute>
           }
         />
@@ -31,7 +37,7 @@ export default function AppRouter() {
           path="/dashboard/:id/analytics"
           element={
             <ProtectedRoute>
-              <div>Analytics</div>
+              <AnalyticsPage />
             </ProtectedRoute>
           }
         />
