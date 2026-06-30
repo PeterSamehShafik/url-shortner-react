@@ -1,6 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-
 import { authApi } from "@/api/endpoints/auth.api";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -13,13 +12,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const finishInitialization = useAuthStore(
     (state) => state.finishInitialization,
   );
+  const called = useRef(false);
 
   useEffect(() => {
+    if (called.current) return;
+    called.current = true;
+
     authApi
       .refresh()
       .then(setUser)
       .catch(() => finishInitialization());
-  }, [setUser, finishInitialization]);
+  }, []);
 
   return children;
 }

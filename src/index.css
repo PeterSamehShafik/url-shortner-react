@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+button, a, [role="button"] {
+  cursor: pointer;
+}
+
+*{
+    transition: all 0.2s ease-in-out;
+}
