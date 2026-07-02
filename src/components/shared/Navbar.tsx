@@ -3,8 +3,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { useThemeStore } from "@/stores/theme.store";
 import api from "@/api/axios";
 import { toast } from "sonner";
-import { Sun, Moon, LogOut, LayoutDashboard, LinkIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sun, Moon, LogOut, LayoutDashboard } from "lucide-react";
 
 export default function Navbar() {
   const navigate = useNavigate();

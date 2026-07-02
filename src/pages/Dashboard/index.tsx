@@ -16,6 +16,22 @@ import {
 } from "lucide-react";
 import MainLayout from "@/layouts/MainLayout";
 
+import { Calendar as DataPicker } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+import { Switch } from "@/components/ui/switch";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -28,8 +44,6 @@ import { useUrls, useCreateUrl, useUpdateUrl } from "@/hooks/useUrls";
 
 import { type Url } from "@/types/api.types";
 import ConfirmationModal from "./ConfirmationModal";
-import CreateModal from "./CreateModal";
-import UpdateModal from "./UpdateModal";
 
 function isExpired(url: Url) {
   if (!url.expiresAt) return false;
@@ -59,9 +73,9 @@ export default function Dashboard() {
   const [createOpen, setCreateOpen] = useState(false);
   const [newUrl, setNewUrl] = useState("");
   const [newSlug, setNewSlug] = useState("");
-  const [expiresAt, setExpiresAt] = useState<Date | null>();
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>();
   const [isPermanent, setIsPermanent] = useState(true);
-  const [updateExpiresAt, setUpdateExpiresAt] = useState<Date | null>();
+  const [updateExpiresAt, setUpdateExpiresAt] = useState<Date | undefined>();
   const [updateIsPermanent, setUpdateIsPermanent] = useState(true);
 
   const copy = async (slug: string) => {
@@ -85,7 +99,7 @@ export default function Dashboard() {
           setCreateOpen(false);
           setNewUrl("");
           setNewSlug("");
-          setExpiresAt(null);
+          setExpiresAt(undefined);
         },
         onError: (err: any) =>
           toast.error(err?.response?.data?.message || "Failed to create"),
@@ -234,7 +248,7 @@ export default function Dashboard() {
                   </a>
 
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger>
                       <button className="flex items-center justify-center h-7 w-7 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
                         <MoreHorizontal size={14} />
                       </button>
@@ -318,32 +332,184 @@ export default function Dashboard() {
       />
 
       {/* Update Modal */}
-      <UpdateModal
-        updateExpiryTarget={updateExpiryTarget}
-        setUpdateExpiryTarget={setUpdateExpiryTarget}
-        updateIsPermanent={updateIsPermanent}
-        setUpdateIsPermanent={setUpdateIsPermanent}
-        updateExpiresAt={updateExpiresAt}
-        setUpdateExpiresAt={setUpdateExpiresAt}
-        handleUpdateExpiry={handleUpdateExpiry}
-        updateUrl={updateUrl}
-      />
+      <Dialog
+        open={!!updateExpiryTarget}
+        onOpenChange={(open) => {
+          if (!open) setUpdateExpiryTarget(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update expiry</DialogTitle>
+            <DialogDescription>
+              Change when this short link expires.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="border-t border-zinc-200 dark:border-zinc-800 pt-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-zinc-900 dark:text-zinc-50">
+                  Permanent link
+                </p>
+                <p className="text-xs text-zinc-400">
+                  Turn off to choose an expiration date.
+                </p>
+              </div>
+
+              <Switch
+                checked={updateIsPermanent}
+                onCheckedChange={setUpdateIsPermanent}
+              />
+            </div>
+
+            {!updateIsPermanent && (
+              <Popover>
+                <PopoverTrigger className="w-full h-9 px-3 dark:text-zinc-50 flex items-center border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-left hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors">
+                  <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500" />
+                  {updateExpiresAt
+                    ? updateExpiresAt.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "Select expiration date"}
+                </PopoverTrigger>
+
+                <PopoverContent className="z-50 pointer-events-auto w-auto p-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                  <DataPicker
+                    mode="single"
+                    selected={updateExpiresAt}
+                    onSelect={setUpdateExpiresAt}
+                    disabled={(date: Date) => date < new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+
+          <DialogFooter>
+            <button
+              onClick={() => setUpdateExpiryTarget(null)}
+              className="text-xs h-8 px-4 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdateExpiry}
+              disabled={
+                updateUrl.isPending || (!updateIsPermanent && !updateExpiresAt)
+              }
+              style={{
+                cursor:
+                  updateUrl.isPending ||
+                  (!updateIsPermanent && !updateExpiresAt)
+                    ? "not-allowed"
+                    : "pointer",
+              }}
+              className="text-xs h-8 px-4 bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-40 transition-colors"
+            >
+              {updateUrl.isPending ? "Updating..." : "Update expiry"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create link modal */}
-      <CreateModal
-        createOpen={createOpen}
-        setCreateOpen={setCreateOpen}
-        newUrl={newUrl}
-        setNewUrl={setNewUrl}
-        newSlug={newSlug}
-        setNewSlug={setNewSlug}
-        createUrl={createUrl}
-        handleCreate={handleCreate}
-        isPermanent={isPermanent}
-        setIsPermanent={setIsPermanent}
-        expiresAt={expiresAt}
-        setExpiresAt={setExpiresAt}
-      />
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New link</DialogTitle>
+            <DialogDescription>
+              Paste a long URL to shorten it. Custom slugs are optional.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 mt-2">
+            <input
+              value={newUrl}
+              onChange={(e) => setNewUrl(e.target.value)}
+              placeholder="https://your-long-url.com"
+              className="w-full h-9 px-3 text-sm bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 transition-colors"
+            />
+            <input
+              value={newSlug}
+              onChange={(e) => setNewSlug(e.target.value)}
+              placeholder="Custom slug (optional)"
+              className="w-full h-9 px-3 text-sm font-mono bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 transition-colors"
+            />
+            <div className="border-t border-zinc-200 dark:border-zinc-800 pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-zinc-900 dark:text-zinc-50">
+                    Permanent link
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    Turn off to choose an expiration date.
+                  </p>
+                </div>
+
+                <Switch
+                  checked={isPermanent}
+                  onCheckedChange={setIsPermanent}
+                />
+              </div>
+
+              {!isPermanent && (
+                <Popover>
+                  <PopoverTrigger className="w-full h-9 px-3 dark:text-zinc-50 flex items-center border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-left hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors">
+                    <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500" />
+                    {expiresAt
+                      ? expiresAt.toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Select expiration date"}
+                  </PopoverTrigger>
+
+                  <PopoverContent className="z-50 pointer-events-auto w-auto p-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                    <DataPicker
+                      mode="single"
+                      selected={expiresAt}
+                      onSelect={setExpiresAt}
+                      disabled={(date: Date) => date < new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <button
+              onClick={() => {
+                setCreateOpen(false);
+                setNewUrl("");
+                setNewSlug("");
+              }}
+              className="text-xs h-8 px-4 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={
+                createUrl.isPending || !newUrl || (!isPermanent && !expiresAt)
+              }
+              style={{
+                cursor:
+                  !newUrl || createUrl.isPending || (!isPermanent && !expiresAt)
+                    ? "not-allowed"
+                    : "pointer",
+              }}
+              className="text-xs h-8 px-4 bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-40 transition-colors"
+            >
+              {createUrl.isPending ? "Creating..." : "Create link"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

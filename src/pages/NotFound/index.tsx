@@ -1,4 +1,3 @@
-import Navbar from "@/components/shared/Navbar";
 import { Button } from "@/components/ui/button";
 import MainLayout from "@/layouts/MainLayout";
 import { Link } from "react-router-dom";
@@ -19,7 +18,7 @@ export default function NotFound() {
               Sorry, the page you're looking for doesn't exist or the shortened
               link is no longer available.
             </p>
-            <Button asChild className="mt-8">
+            <Button className="mt-8">
               <Link to="/">Go Back Home</Link>
             </Button>
           </div>

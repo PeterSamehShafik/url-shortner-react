@@ -5,7 +5,6 @@ import MainLayout from "@/layouts/MainLayout";
 import { useAuthStore } from "@/stores/auth.store";
 import { useCreateUrl } from "@/hooks/useUrls";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -17,7 +16,7 @@ import { CalendarIcon } from "lucide-react";
 export default function Home() {
   const [url, setUrl] = useState("");
   const [slug, setSlug] = useState("");
-  const [expiresAt, setExpiresAt] = useState<Date | null>();
+  const [expiresAt, setExpiresAt] = useState<Date | undefined>();
   const [isPermanent, setIsPermanent] = useState(true);
   const [result, setResult] = useState<any>(null);
   const { user } = useAuthStore();
@@ -37,7 +36,7 @@ export default function Home() {
           setResult(data);
           setUrl("");
           setSlug("");
-          setExpiresAt(null);
+          setExpiresAt(undefined);
           toast.success("URL shortened");
         },
         onError: (err: any) =>
@@ -137,7 +136,7 @@ export default function Home() {
                         mode="single"
                         selected={expiresAt}
                         onSelect={setExpiresAt}
-                        disabled={(date) => date < new Date()}
+                        disabled={(date:Date) => date < new Date()}
                       />
                     </PopoverContent>
                   </Popover>
