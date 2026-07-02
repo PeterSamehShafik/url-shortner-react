@@ -8,13 +8,28 @@ import {
   ExternalLink,
   Plus,
   Link2,
+  MoreHorizontal,
+  Calendar,
+  PauseCircle,
+  PlayCircle,
+  CalendarIcon,
 } from "lucide-react";
 import MainLayout from "@/layouts/MainLayout";
-import { useUrls, useCreateUrl } from "@/hooks/useUrls";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+
+import { useUrls, useCreateUrl, useUpdateUrl } from "@/hooks/useUrls";
 
 import { type Url } from "@/types/api.types";
 import ConfirmationModal from "./ConfirmationModal";
 import CreateModal from "./CreateModal";
+import UpdateModal from "./UpdateModal";
 
 function isExpired(url: Url) {
   if (!url.expiresAt) return false;
@@ -35,11 +50,19 @@ export default function Dashboard() {
   const { data: urls, isLoading } = useUrls();
 
   const createUrl = useCreateUrl();
+  const updateUrl = useUpdateUrl();
   const [deleteTarget, setDeleteTarget] = useState<Url | null>(null);
+  const [updateExpiryTarget, setUpdateExpiryTarget] = useState<Url | null>(
+    null,
+  );
 
   const [createOpen, setCreateOpen] = useState(false);
   const [newUrl, setNewUrl] = useState("");
   const [newSlug, setNewSlug] = useState("");
+  const [expiresAt, setExpiresAt] = useState<Date | null>();
+  const [isPermanent, setIsPermanent] = useState(true);
+  const [updateExpiresAt, setUpdateExpiresAt] = useState<Date | null>();
+  const [updateIsPermanent, setUpdateIsPermanent] = useState(true);
 
   const copy = async (slug: string) => {
     await navigator.clipboard.writeText(
@@ -51,16 +74,50 @@ export default function Dashboard() {
   const handleCreate = () => {
     if (!newUrl) return toast.error("URL is required");
     createUrl.mutate(
-      { originalUrl: newUrl, customSlug: newSlug || undefined },
+      {
+        originalUrl: newUrl,
+        customSlug: newSlug || undefined,
+        expiresAt: isPermanent ? null : expiresAt?.toISOString(),
+      },
       {
         onSuccess: () => {
           toast.success("Link created");
           setCreateOpen(false);
           setNewUrl("");
           setNewSlug("");
+          setExpiresAt(null);
         },
         onError: (err: any) =>
           toast.error(err?.response?.data?.message || "Failed to create"),
+      },
+    );
+  };
+
+  const openUpdateExpiryModal = (url: Url) => {
+    setUpdateExpiryTarget(url);
+    setUpdateIsPermanent(!url.expiresAt);
+    setUpdateExpiresAt(url.expiresAt ? new Date(url.expiresAt) : undefined);
+  };
+
+  const handleUpdateExpiry = () => {
+    if (!updateExpiryTarget) return;
+
+    updateUrl.mutate(
+      {
+        id: updateExpiryTarget.id,
+        data: {
+          expiresAt: updateIsPermanent ? null : updateExpiresAt?.toISOString(),
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Expiry updated");
+          setUpdateExpiryTarget(null);
+          setUpdateExpiresAt(undefined);
+          setUpdateIsPermanent(true);
+        },
+        onError: (err: any) =>
+          toast.error(err?.response?.data?.message || "Failed to update"),
       },
     );
   };
@@ -165,6 +222,7 @@ export default function Dashboard() {
                     <Copy size={11} />
                     Copy
                   </button>
+
                   <a
                     href={`${import.meta.env.VITE_API_URL}/${url.slug}`}
                     target="_blank"
@@ -174,20 +232,78 @@ export default function Dashboard() {
                     <ExternalLink size={11} />
                     Open
                   </a>
-                  <button
-                    onClick={() => navigate(`/dashboard/${url.id}/analytics`)}
-                    className="flex items-center gap-1 text-xs h-7 px-2 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                  >
-                    <BarChart2 size={11} />
-                    Stats
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget(url)}
-                    className="flex items-center gap-1 text-xs h-7 px-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                  >
-                    <Trash2 size={11} />
-                    Delete
-                  </button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center justify-center h-7 w-7 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                        <MoreHorizontal size={14} />
+                      </button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() =>
+                          navigate(`/dashboard/${url.id}/analytics`)
+                        }
+                      >
+                        <BarChart2 className="mr-2 h-4 w-4" />
+                        Analytics
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => {
+                          updateUrl.mutate(
+                            {
+                              id: url.id,
+                              data: { isActive: !url.isActive },
+                            },
+                            {
+                              onSuccess: () =>
+                                toast.success(
+                                  url.isActive
+                                    ? "Link disabled"
+                                    : "Link enabled",
+                                ),
+                              onError: (err: any) =>
+                                toast.error(
+                                  err?.response?.data?.message ||
+                                    "Failed to update",
+                                ),
+                            },
+                          );
+                        }}
+                      >
+                        {url.isActive ? (
+                          <>
+                            <PauseCircle className="mr-2 h-4 w-4" />
+                            Disable
+                          </>
+                        ) : (
+                          <>
+                            <PlayCircle className="mr-2 h-4 w-4" />
+                            Enable
+                          </>
+                        )}
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => openUpdateExpiryModal(url)}
+                      >
+                        <Calendar className="mr-2 h-4 w-4" />
+                        Update expiry
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem
+                        onClick={() => setDeleteTarget(url)}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             ))}
@@ -201,6 +317,18 @@ export default function Dashboard() {
         setDeleteTarget={setDeleteTarget}
       />
 
+      {/* Update Modal */}
+      <UpdateModal
+        updateExpiryTarget={updateExpiryTarget}
+        setUpdateExpiryTarget={setUpdateExpiryTarget}
+        updateIsPermanent={updateIsPermanent}
+        setUpdateIsPermanent={setUpdateIsPermanent}
+        updateExpiresAt={updateExpiresAt}
+        setUpdateExpiresAt={setUpdateExpiresAt}
+        handleUpdateExpiry={handleUpdateExpiry}
+        updateUrl={updateUrl}
+      />
+
       {/* Create link modal */}
       <CreateModal
         createOpen={createOpen}
@@ -211,6 +339,10 @@ export default function Dashboard() {
         setNewSlug={setNewSlug}
         createUrl={createUrl}
         handleCreate={handleCreate}
+        isPermanent={isPermanent}
+        setIsPermanent={setIsPermanent}
+        expiresAt={expiresAt}
+        setExpiresAt={setExpiresAt}
       />
     </MainLayout>
   );

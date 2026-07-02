@@ -17,7 +17,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       <ThemeProvider>
         <AuthProvider>
           {children}
-          <Toaster richColors position="bottom-right" />
+          <Toaster richColors position="bottom-right" closeButton />
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

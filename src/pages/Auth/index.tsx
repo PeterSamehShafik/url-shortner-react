@@ -77,6 +77,7 @@ export default function Auth() {
             <button
               type="submit"
               disabled={isPending}
+              style={{ cursor: isPending ? "not-allowed" : "pointer" }}
               className="w-full h-9 text-sm font-medium bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-40 transition-colors"
             >
               {isPending

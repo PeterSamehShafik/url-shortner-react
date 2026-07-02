@@ -34,6 +34,7 @@ export interface Url {
   slug: string;
   originalUrl: string;
   expiresAt: string | null;
+  isActive: boolean;
   createdAt: string;
   userId: string | null;
 }
@@ -41,12 +42,11 @@ export interface Url {
 export interface CreateUrlDto {
   originalUrl: string;
   customSlug?: string;
-  expiresAt?: string;
+  expiresAt?: string | null;
 }
 
 export interface UpdateUrlDto {
-  originalUrl?: string;
-  customSlug?: string;
+  isActive?: boolean;
   expiresAt?: string | null;
 }
 

@@ -4,10 +4,21 @@ import { Copy, ExternalLink, Link2 } from "lucide-react";
 import MainLayout from "@/layouts/MainLayout";
 import { useAuthStore } from "@/stores/auth.store";
 import { useCreateUrl } from "@/hooks/useUrls";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
 
 export default function Home() {
   const [url, setUrl] = useState("");
   const [slug, setSlug] = useState("");
+  const [expiresAt, setExpiresAt] = useState<Date | null>();
+  const [isPermanent, setIsPermanent] = useState(true);
   const [result, setResult] = useState<any>(null);
   const { user } = useAuthStore();
   const createUrl = useCreateUrl();
@@ -15,12 +26,18 @@ export default function Home() {
   const onSubmit = () => {
     if (!url) return;
     createUrl.mutate(
-      { originalUrl: url, customSlug: slug || undefined },
+      {
+        originalUrl: url,
+        customSlug: slug || undefined,
+        expiresAt: isPermanent ? null : expiresAt?.toISOString(),
+      },
+
       {
         onSuccess: (data: any) => {
           setResult(data);
           setUrl("");
           setSlug("");
+          setExpiresAt(null);
           toast.success("URL shortened");
         },
         onError: (err: any) =>
@@ -79,6 +96,54 @@ export default function Home() {
                 className="w-full bg-transparent text-sm font-mono text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 outline-none border-t border-zinc-100 dark:border-zinc-800 pt-2"
               />
             )}
+            {user && (
+              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-zinc-900 dark:text-zinc-50">
+                      Permanent link
+                    </p>
+                    <p className="text-xs text-zinc-400">
+                      Disable to choose an expiration date.
+                    </p>
+                  </div>
+
+                  <Switch
+                    checked={isPermanent}
+                    onCheckedChange={setIsPermanent}
+                  />
+                </div>
+
+                {!isPermanent && (
+                  <Popover>
+                    <PopoverTrigger>
+                      <button
+                        type="button"
+                        className="w-full h-9 px-3 flex items-center border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-left hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500" />
+                        {expiresAt
+                          ? expiresAt.toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "Select expiration date"}
+                      </button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={expiresAt}
+                        onSelect={setExpiresAt}
+                        disabled={(date) => date < new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
+            )}
           </div>
           <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 sm:px-4 py-2 flex items-center justify-between gap-3">
             <span className="text-xs text-zinc-400 shrink-0">
@@ -86,8 +151,13 @@ export default function Home() {
             </span>
             <button
               onClick={onSubmit}
-              disabled={!canSubmit}
-              style={{ cursor: !url ? "not-allowed" : "pointer" }}
+              disabled={!canSubmit || (!isPermanent && !expiresAt)}
+              style={{
+                cursor:
+                  !url || createUrl.isPending || (!isPermanent && !expiresAt)
+                    ? "not-allowed"
+                    : "pointer",
+              }}
               className="text-xs font-medium px-4 h-7 bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-40 transition-colors shrink-0"
             >
               {createUrl.isPending ? "Shortening..." : "Shorten"}

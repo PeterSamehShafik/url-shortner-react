@@ -8,5 +8,8 @@ export function useAnalytics(urlId: string) {
     queryKey: queryKeys.analytics(urlId),
     queryFn: () => analyticsApi.getByUrlId(urlId),
     enabled: !!urlId,
+    staleTime: 0,
+    refetchInterval: 20000,
+    refetchIntervalInBackground: true,
   });
 }
