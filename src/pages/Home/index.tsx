@@ -136,7 +136,7 @@ export default function Home() {
                         mode="single"
                         selected={expiresAt}
                         onSelect={setExpiresAt}
-                        disabled={(date:Date) => date < new Date()}
+                        disabled={(date: Date) => date < new Date()}
                       />
                     </PopoverContent>
                   </Popover>

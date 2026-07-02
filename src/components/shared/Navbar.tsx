@@ -4,6 +4,7 @@ import { useThemeStore } from "@/stores/theme.store";
 import api from "@/api/axios";
 import { toast } from "sonner";
 import { Sun, Moon, LogOut, LayoutDashboard } from "lucide-react";
+import icon from "@/assets/icon.png";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -27,13 +28,13 @@ export default function Navbar() {
   return (
     <header className="w-full border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
       <div className="max-w-5xl mx-auto px-4 h-12 flex items-center gap-6">
-
         {/* Logo */}
         <Link
           to="/"
-          className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight shrink-0"
+          className="flex justify-center items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight shrink-0"
         >
-          snip.
+          <img src={icon} alt="icon" className="w-5 h-5" />
+          <span>Shorten Url</span>
         </Link>
 
         {/* Nav links */}
@@ -55,7 +56,6 @@ export default function Navbar() {
 
         {/* Right side */}
         <div className="ml-auto flex items-center gap-2">
-
           {/* User email */}
           {user && (
             <span className="text-xs text-zinc-400 dark:text-zinc-500 hidden sm:block">

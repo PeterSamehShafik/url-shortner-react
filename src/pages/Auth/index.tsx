@@ -34,18 +34,8 @@ export default function Auth() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4">
+      <div className="min-h-[80vh] flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4">
         <div className="w-full max-w-sm">
-          {/* Logo */}
-          <div className="mb-8">
-            <a
-              href="/"
-              className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight"
-            >
-              snip.
-            </a>
-          </div>
-
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50 mb-1">
