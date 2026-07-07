@@ -1,75 +1,49 @@
-# React + TypeScript + Vite
+## URL Shortener Frontend 🌐
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A sleek, responsive user interface built with **React**, **TypeScript**, and **Vite**, designed to pair seamlessly with the NestJS backend.
 
-Currently, two official plugins are available:
+🔗 **[Live Demo](https://lin-k.up.railway.app/live)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🛠️ Core Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **UI Components:** `shadcn/ui` (Radix Primitives + Tailwind CSS)
+* **State Management:** `Zustand`
+* **Data Fetching & Cache:** `@tanstack/react-query`
+* **Theme:** Native **Dark Mode** support persisted via `localStorage`
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🔑 Key Engineering Highlights
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. Silent Auth & Refresh Token Rotation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+* **Axios Interceptors:** Automatically catches `401 Unauthorized` errors, fires a hidden request to `/auth/refresh` to rotate tokens via `HttpOnly` cookies, and retries the original request seamlessly.
+* **Zustand Auth Store:** Syncs the global `user` and `isAuthenticated` states instantly across the app.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. Dual-Mode UX (Guest vs. User)
+
+* **Guests:** Quick URL shortening interface with visible reminders regarding the **7-day TTL** expiration and guest rate-limiting.
+* **Users:** Full access to an interactive dashboard to manage links, use custom slugs, set optional expiries, and view advanced analytics.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Environment Setup
+
+Create a `.env` file in the root directory:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
 
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Installation & Run
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 
 ```
